@@ -469,4 +469,34 @@ public class Java8Features {
         return new User(new Address("Lohegoa,Pune-411047"));
     }
 
+    /**
+ *
+ * Interface with default and static methods (java 8 feature)
+ */
+
+interface Vehicle {
+
+    //abstract method (must have be implemented)
+    void start();
+
+    //Default method - has implementation, can be overridden
+    default void stop(){
+        System.out.println(" [Default] Vehicle stopped.");
+    }
+
+    //Default method - can be overridden
+    default void describe(){
+        System.out.println(" [Default] I'm Vehicle.");
+    }
+
+    //static method - belongs to instance , cannot be overridden
+    static void printInfo(){
+        System.out.println( " [static] Vehicle interface - Java8 default/static method demo.");
+    }
+}
+
+
+
+    
+
 }
