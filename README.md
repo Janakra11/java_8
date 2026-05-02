@@ -1,2 +1,2 @@
 # java_8
-Java8 programing concepts with programming
+Java8 programing concepts with examples
