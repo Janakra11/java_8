@@ -1,7 +1,7 @@
-import javax.swing.text.html.Option;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Month;
+import javax.sound.midi.SysexMessage;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
@@ -195,8 +195,8 @@ public class Java8Features {
          *  This enables backward compatibility when adding new methods to interfaces.
          */
 
-        Vehicle car = Car("Mahindra XUV700");
-        Vehicle bike = Car("Hero xtereme 125cc");
+        Vehicle car = new Car("Mahindra XUV700");
+        Vehicle bike = new Car("Hero xtereme 125cc");
 
         car.start();
         car.describe();//default method
@@ -332,16 +332,7 @@ public class Java8Features {
         Optional<String> empty = Optional.empty();
         Optional<String> nullable = Optional.ofNullable(null);
 
-        System.out.println(" present.isPresent():" + present.isPresent());
-        System.out.println(" empty.isPresent():" + empty.isPresent());
-        System.out.println(" nullable.isPresent():" + nullable.isPresent());
-
-        //orElse
-        System.out.println(" present.orElse('default'):" + present.orElse("default"));
-        System.out.println(" empty.orElse('default'):" + empty.orElse("default"));
-
-        //orElseGet
-        System.out.println(" empty.orElseGet:" + empty.orElseGet(() -> "generated default"));
+        System.out.println(" present.isPresent():" + present.orElseGet(() -> "generated default"));
 
         //ifPresent
         present.ifPresent(v -> System.out.println(" ifPresent value: "+v));
@@ -359,6 +350,15 @@ public class Java8Features {
                 .map(User::getAddress)
                 .map(Address::getCity)
                 .orElse("Unknown City");
+        System.out.println(" empty.isPresent():" + empty.isPresent());
+        System.out.println(" nullable.isPresent():" + nullable.isPresent());
+
+        //orElse
+        System.out.println(" present.orElse('default'):" + present.orElse("default"));
+        System.out.println(" empty.orElse('default'):" + empty.orElse("default"));
+
+        //orElseGet
+        System.out.println(" empty.orElseGet:" + empty.orElse("default"));
         System.out.println(" chained Optional City: "+ city);
 
         //--------------------------------------------------------------------
@@ -396,15 +396,142 @@ public class Java8Features {
 
         //LocalTime
         LocalTime now = LocalTime.now();
+        LocalTime meetingTime = LocalTime.of(14,30,0);
+        System.out.println(" Current time : "+ now);
+        System.out.println(" Meeting Time : "+ meetingTime);
+        System.out.println(" Is before meeting: "+ now.isBefore(meetingTime));
+
+        //LocalDateTime
+        LocalDateTime dateTime = LocalDateTime.now();
+        LocalDateTime specificDateTime = LocalDateTime.of(2026, 1,5,0,0);
+        System.out.println(" Current date time :"+ dateTime);
+        System.out.println(" specific date time : "+ specificDateTime);
+
+        //ZonedDateTime
+        ZonedDateTime zoneNow = ZonedDateTime.now();
+        ZonedDateTime indiaTime = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+        System.out.println(" Local zone: "+ zoneNow);
+        System.out.println(" India Zone: "+ indiaTime);
+
+        //Instant machine timestamp
+        Instant instant = Instant.now();
+        System.out.println(" Instant epach ms:" + instant.toEpochMilli());
+
+        //Duration
+        LocalTime start = LocalTime.of(9,0);
+        LocalTime end = LocalTime.of(17,30);
+        Duration workday = Duration.between(start, end);
+        System.out.println(" Work day duration: "+ workday.toHours() + " hours"
+                            +(workday.toMinutes()%60) + "minutes");
+
+        //Period
+        LocalDate startDate = LocalDate.of(2026, 1,1);
+        LocalDate endDate = LocalDate.now();
+        Period period = Period.between(startDate, endDate);
+        System.out.println(" Period since 2026-01-01: "+ period.getYears() + " y "
+                         + period.getMonths() +"m "+ period.getDays()+"d");
+
+        //DateTimeFormatter
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:SS");
+        String formatted = LocalDateTime.now().format(formatter);
+        System.out.println(" Present date:" +formatted);
+
+        //Parsing
+        LocalDate parsed = LocalDate.parse("03-05-2026", DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        System.out.println(" Parsed date : "+ parsed);
+
+        //ChronoUnit
+        long daysBetween = ChronoUnit.DAYS.between(birthDate, today);
+        System.out.println(" days since birthday : " + daysBetween);
+
+        //------------------------------------------------------------------------------
+        // 8. COLLECTORS
+        //-------------------------------------------------------------------
+        System.out.println("\n-- 8.COLLECTORS---");
+
+        /***
+         * Collectors provide implementations of Collector interface for
+         * common mutable reduction operations.
+         *
+         * Common collections:
+         * toList()   - collect to List
+         * toSet()    - collect to Set
+         * toMap()    - collect to Map
+         * joining()  - concatenate strings
+         * gorupingBy() - group elements by classifer
+         * partitioningBy() - partition into true/false map
+         * counting()   - count elements
+         * summingInt()  - sum integer values
+         * averageInt() - average integer values
+         * summrizingInt() - statistics summary
+         */
+
+        List<String> fruits = Arrays.asList("Apple", "Banana", "Cherry", "Avocado", "Blueberry", "Apricot");
+
+        //toList
+        List<String> aFruits = fruits.stream()
+                .filter(f -> f.startsWith("A"))
+                .collect(Collectors.toList());
+        System.out.println(" Fruits starting with A:" + aFruits);
+
+        //toSet
+        Set<Integer> lengths = fruits.stream()
+                .map(String::length)
+                .collect(Collectors.toSet());
+        System.out.println(" Unique lengths: "+ new TreeSet<>(lengths));
 
 
+        //joining
+        String joined = fruits.stream()
+                .collect(Collectors.joining(",", "[", "]"));
+        System.out.println(" Joined : "+ joined);
 
+        //Grouping
+        Map<Character, List<String>> grouped = fruits.stream()
+                .collect(Collectors.groupingBy(f -> f.charAt(0)));
+        System.out.println(" Grouped by First letter : "+ grouped);
 
+        //groupingBy with counting
+        Map<Character, Long> countByLetter = fruits.stream()
+                .collect(Collectors.groupingBy(f -> f.charAt(0), Collectors.counting());
+        System.out.println(" Count by First charactor : " + countByLetter);
 
+        //partitioningBy
+        Map<Boolean, List<String>> partitioned = fruits.stream()
+                .collect(Collectors.partitioningBy(f -> f.length() > 5));
+        System.out.println(" lengths > 5 : " + partitioned.get(true));
+        System.out.println(" lengths <= 5 : " + partitioned.get(false));
 
+        //toMap
+        Map<String, Integer> fruitLengthMap = fruits.stream()
+                .collect(Collectors.toMap(f -> f, String::length));
+        System.out.println(" Fruit length map: " + fruitLengthMap);
 
+        // summarizingInt
+        IntSummaryStatistics statistics = nums.stream()
+                .collect(Collectors.summarizingInt(Integer::intValue));
+        System.out.println(" stats : count = "+ statistics.getCount()+ ", sum="+statistics.getSum()
+                            +", min = "+ statistics.getMin()+
+                             ", max = "+ statistics.getMax()
+                            +", average="+ statistics.getAverage());
 
+        //----------------------------------------------------------------------------------
+        // 9. forEach() on ITERABLE & MAP
+        //----------------------------------------------------------------------------------
+        System.out.println("\n--- 9. forEach() ON ITERABLE & MAP");
 
+        /**
+         * Java 8 added forEach() to Iterable and Map interface,
+         * allowing iteration using lambda expression
+         */
+
+        // forEach on List
+        List<String> colors = Arrays.asList("Red", "Green", "Blue");
+        System.out.println(" colors: ");
+        colors.forEach(c -> System.out.println(c+" "));
+        System.out.println();
+
+        //forEach() on Map
 
 
 
@@ -445,14 +572,13 @@ public class Java8Features {
         }
 
         //Uses default stop() from interface
-        //override describe()
-        @Override
         public void describe() {
             System.out.println(" [Bike] I'm a Car:"+ model );
         }
     }
 
-    //Helper classes for Optional chaining example
+    //Helper classes for Optional chaining exampl
+        //override describe()
     static class User {
         private final Address address;
         User(Address address){ this.address = address;}
@@ -470,30 +596,30 @@ public class Java8Features {
     }
 
     /**
- *
- * Interface with default and static methods (java 8 feature)
- */
+     *
+     * Interface with default and static methods (java 8 feature)
+     */
 
-interface Vehicle {
+    interface Vehicle {
 
-    //abstract method (must have be implemented)
-    void start();
+        //abstract method (must have be implemented)
+        void start();
 
-    //Default method - has implementation, can be overridden
-    default void stop(){
-        System.out.println(" [Default] Vehicle stopped.");
+        //Default method - has implementation, can be overridden
+        default void stop(){
+            System.out.println(" [Default] Vehicle stopped.");
+        }
+
+        //Default method - can be overridden
+        default void describe(){
+            System.out.println(" [Default] I'm Vehicle.");
+        }
+
+        //static method - belongs to instance , cannot be overridden
+        static void printInfo(){
+            System.out.println( " [static] Vehicle interface - Java8 default/static method demo.");
+        }
     }
-
-    //Default method - can be overridden
-    default void describe(){
-        System.out.println(" [Default] I'm Vehicle.");
-    }
-
-    //static method - belongs to instance , cannot be overridden
-    static void printInfo(){
-        System.out.println( " [static] Vehicle interface - Java8 default/static method demo.");
-    }
-}
 
 
 
